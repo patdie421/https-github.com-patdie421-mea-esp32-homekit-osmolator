@@ -13,6 +13,7 @@
 
 #include "config.h"
 #include "status_led.h"
+#include "tcp_server.h"
 
 /*
  *
@@ -49,6 +50,7 @@ static void event_handler_sta_autoreco(void* arg, esp_event_base_t event_base, i
          break;
       case WIFI_EVENT_STA_CONNECTED:
          status_led_set_interval(1000);
+         tcp_server_start();
          ESP_LOGI(TAG_STA, "reconnection to the AP done");
          break;
    }
