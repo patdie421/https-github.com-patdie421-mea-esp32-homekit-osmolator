@@ -29,7 +29,9 @@
 
 static const char *TAG = "tcp_server";
 static int8_t _mode = 0;
-struct mea_config_s *_mea_config = NULL; 
+struct mea_config_s *_mea_config = NULL;
+TaskHandle_t tcpServer_taskHandle = NULL;
+
 
 void send_data(const int sock, char *data)
 {
@@ -247,7 +249,6 @@ static void tcp_server_task(void *pvParameters)
 {
    int ip_protocol = 0;
    struct sockaddr_in dest_addr;
-
    struct sockaddr_in *dest_addr_ip4 = (struct sockaddr_in *)&dest_addr;
    dest_addr_ip4->sin_addr.s_addr = htonl(INADDR_ANY);
    dest_addr_ip4->sin_family = AF_INET;
@@ -277,6 +278,10 @@ static void tcp_server_task(void *pvParameters)
    while (1) {
       struct sockaddr_in source_addr;
 
+      if(tcp_server_stop_flag) {
+         goto CLEAN_UP;
+      }
+      
       uint addr_len = sizeof(source_addr);
       int sock = accept(listen_sock, (struct sockaddr *)&source_addr, &addr_len);
       if (sock < 0) {
@@ -296,9 +301,19 @@ CLEAN_UP:
 }
 
 
+void start_tcp_server()
+{
+   if(tcpServer_taskHandle) {
+      vTaskDelete(tcpServer_taskHandle);
+      tcpServer_taskHandle=NULL;
+   }
+   xTaskCreate(tcp_server_task, "tcp_server", 4096, (void*)AF_INET, 5, &tcpServer_taskHandle);
+}
+
+
 void tcp_server_init(uint8_t mode)
 {
    _mode = mode;
    _mea_config=config_get();
-   xTaskCreate(tcp_server_task, "tcp_server", 4096, (void*)AF_INET, 5, NULL);
+   start_tcp_server();
 }
