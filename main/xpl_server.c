@@ -450,7 +450,7 @@ static void xpl_server_task(void *pvParameters)
    char data[1024];
    int xpl_msg_index = 0;
    while (1) {
-      if( xSemaphoreTake(lock, (TickType_t) 1000) == pdTRUE ) {
+      if( xSemaphoreTake(lock, (TickType_t) 1000 / portTICK_PERIOD_MS) == pdTRUE ) {
          if(stop_xpl_server>0) {
             xSemaphoreGive(lock);
             goto CLEAN_UP;
@@ -491,9 +491,10 @@ void xpl_server_stop()
       return;
    }
 
-   if( xSemaphoreTake(lock, (TickType_t)1000) == pdTRUE ) {
+   if( xSemaphoreTake(lock, (TickType_t)1000 / portTICK_PERIOD_MS) == pdTRUE ) {
       stop_xpl_server=0;
       xSemaphoreGive(lock);
+      vTaskDelay(1000 / portTICK_PERIOD_MS);
    }
    else {
       vTaskDelete(xpl_server_handle); // force stop
