@@ -33,7 +33,9 @@ static const char *TAG = "xpl_server";
 static char *xpl_source = NULL;
 static char *xpl_version = "0.0.1";
 static int xpl_interval = 60; // seconds
-
+SemaphoreHandle_t lock = NULL;
+static int8_t stop_xpl_server = 0;
+TaskHandle_t xpl_server_handle = NULL;
 
 struct xpl_msg_s xpl_msg[XPL_MAX_MESSAGE_ITEMS+1], *pxpl_msg=&xpl_msg[0];
 int xpl_socket = -1;
@@ -448,6 +450,14 @@ static void xpl_server_task(void *pvParameters)
    char data[1024];
    int xpl_msg_index = 0;
    while (1) {
+      if( xSemaphoreTake(lock, (TickType_t) 1000) == pdTRUE ) {
+         if(stop_xpl_server>0) {
+            xSemaphoreGive(lock);
+            goto CLEAN_UP;
+         }
+         xSemaphoreGive(lock);
+      }
+
       int r=xpl_read_msg(sock, 250, data, sizeof(data));
       if(r>0) {
          data[r]=0;
@@ -470,13 +480,40 @@ CLEAN_UP:
    ESP_ERROR_CHECK(esp_timer_delete(xplhb_timer));
    xpl_socket=-1;
    close(sock);
+   xpl_server_handle=NULL;
    vTaskDelete(NULL);
+}
+
+
+void xpl_server_stop()
+{
+   if(xpl_server_handle==NULL) {
+      return;
+   }
+
+   if( xSemaphoreTake(lock, (TickType_t)1000) == pdTRUE ) {
+      stop_xpl_server=0;
+      xSemaphoreGive(lock);
+   }
+   else {
+      vTaskDelete(xpl_server_handle); // force stop
+   }
+
+   xpl_server_handle=NULL;
+}
+
+
+void xpl_server_start()
+{
+   xpl_server_stop();
+   xTaskCreate(xpl_server_task, "xpl_server", 4096, (void*)NULL, 3, &xpl_server_handle);
 }
 
 
 void xpl_server_init(char *source)
 {
+   lock = xSemaphoreCreateBinary();
    if(set_xpl_source(source)==0) {
-      xTaskCreate(xpl_server_task, "xpl_server", 4096, (void*)NULL, 3, NULL);
+      xpl_server_start();
    }
 }
