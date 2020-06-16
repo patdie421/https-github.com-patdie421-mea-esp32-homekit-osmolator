@@ -31,7 +31,7 @@ static const char *TAG = "tcp_server";
 static int8_t _mode = 0;
 struct mea_config_s *_mea_config = NULL;
 TaskHandle_t tcpServer_taskHandle = NULL;
-
+int listen_sock = -1;
 
 void send_data(const int sock, char *data)
 {
@@ -255,7 +255,7 @@ static void tcp_server_task(void *pvParameters)
    dest_addr_ip4->sin_port = htons(PORT);
    ip_protocol = IPPROTO_IP;
 
-   int listen_sock = socket(AF_INET, SOCK_STREAM, ip_protocol);
+   listen_sock = socket(AF_INET, SOCK_STREAM, ip_protocol);
    if (listen_sock < 0) {
       ESP_LOGE(TAG, "Unable to create socket: errno %d", errno);
       vTaskDelete(NULL);
@@ -297,6 +297,7 @@ static void tcp_server_task(void *pvParameters)
 
 CLEAN_UP:
     close(listen_sock);
+   listen_sock=-1;
     vTaskDelete(NULL);
 }
 
@@ -306,6 +307,10 @@ void start_tcp_server()
    if(tcpServer_taskHandle) {
       vTaskDelete(tcpServer_taskHandle);
       tcpServer_taskHandle=NULL;
+      if(listen_sock>=0) {
+         close(listen_sock);
+         listen_sock = -1;
+      }
    }
    xTaskCreate(tcp_server_task, "tcp_server", 4096, (void*)AF_INET, 5, &tcpServer_taskHandle);
 }
