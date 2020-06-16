@@ -251,7 +251,7 @@ void process_sensor_basic(char *p)
          else if(id==1) {
             fvalue=temperature_ds18b20_get();
          }
-         if(fvalue!=9999.9) {
+         if(fvalue>-9999.9) {
             xpl_send_current_float("stat", device, fvalue);
          }
          break;
@@ -259,14 +259,14 @@ void process_sensor_basic(char *p)
          if(id==0) {
             fvalue=temperature_dht_get_h();
          }
-         if(fvalue!=9999.9) {
+         if(fvalue>-9999.9) {
             xpl_send_current_float("stat", device, fvalue);
          }
          break;
       default:
          return;
    }
-   if(ivalue>=0 || fvalue!=-9999.99) {
+   if(ivalue>=0 || fvalue>-9999.99) {
       ESP_LOGI(TAG,"xpl: request value for %s", p);
    }
 }
