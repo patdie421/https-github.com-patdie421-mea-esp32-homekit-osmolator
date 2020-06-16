@@ -41,14 +41,16 @@ esp_event_handler_instance_t instance_any_id;
 
 static void event_handler_sta_autoreco(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
 {
-   if(event_id == WIFI_EVENT_STA_DISCONNECTED) {
-      status_led_set_interval(125);
-      esp_wifi_connect();
-      ESP_LOGI(TAG_STA, "retry to connect to the AP");
-   }
-   else if(event_id == WIFI_EVENT_STA_CONNECTED) {
-      status_led_set_interval(1000);
-      ESP_LOGI(TAG_STA, "reconnection to the AP done");
+   switch(event_id) {
+      case WIFI_EVENT_STA_DISCONNECTED:
+         status_led_set_interval(125);
+         esp_wifi_connect();
+         ESP_LOGI(TAG_STA, "retry to connect to the AP");
+         break;
+      case WIFI_EVENT_STA_CONNECTED:
+         status_led_set_interval(1000);
+         ESP_LOGI(TAG_STA, "reconnection to the AP done");
+         break;
    }
 }
 
@@ -86,6 +88,8 @@ int wifi_init_sta(char *wifi_ssid, char *wifi_password)
          .password = ""
       }
    };
+   strcpy((char *)wifi_config.sta.ssid, wifi_ssid);
+   strcpy((char *)wifi_config.sta.password, wifi_password);
    s_wifi_event_group = xEventGroupCreate();
 
    ESP_ERROR_CHECK(esp_netif_init());
@@ -108,11 +112,8 @@ int wifi_init_sta(char *wifi_ssid, char *wifi_password)
       NULL,
       &instance_got_ip));
 
-   strcpy((char *)wifi_config.sta.ssid, wifi_ssid);
-   strcpy((char *)wifi_config.sta.password, wifi_password);
-
-   ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA) );
-   ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config) );
+   ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
+   ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config));
    ESP_ERROR_CHECK(esp_wifi_start());
 
    ESP_LOGI(TAG_STA, "wifi_init_sta finished.");
