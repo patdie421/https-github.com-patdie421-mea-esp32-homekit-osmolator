@@ -31,8 +31,8 @@ def do_request(host, port, command):
 
    
 #message = TOKEN+':W:5eme iPhone de Patrice/wificdpii1000'
-message = TOKEN+':W:france2/wificdpii1000'
-# message = TOKEN+':R'
+#message = TOKEN+':W:france2/wificdpii1000'
+message = TOKEN+':r'
 do_request(HOST,PORT,message) 
 
 sys.exit(0)

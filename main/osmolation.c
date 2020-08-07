@@ -80,16 +80,16 @@ static void osmolation_task(void *pvParameters)
          continue;
       }
 
-      if(osmolation.state != OSMOLATION_ALARM && reserve_low_value == 0 && reserve_high_value == 0) {
-         osmolation.state=OSMOLATION_ERR;
-         continue;
-      }
-
       if(osmolation.state == OSMOLATION_FORCE) {
          esp_timer_stop(osmolation_timer);
          esp_timer_start_once(osmolation_timer, MAX_ON_DELAY_S * 1000000);
          osmolation.state = OSMOLATION_FORCED;
          flags_set(0,0);
+         continue;
+      }
+
+      if(osmolation.state != OSMOLATION_ALARM && reserve_low_value == 0 && reserve_high_value == 0) {
+         osmolation.state=OSMOLATION_ERR;
          continue;
       }
 
@@ -126,16 +126,15 @@ static void osmolation_task(void *pvParameters)
             esp_timer_start_once(osmolation_timer, MAX_ON_DELAY_S * 1000000);
             osmolation.state=OSMOLATION_WORKING;
          }
-     }
+      }
 
-     if(osmolation.state==OSMOLATION_WORKING) {
-        if(level_value == 1) {
+      if(osmolation.state==OSMOLATION_WORKING) {
+         if(level_value == 1) {
             esp_timer_stop(osmolation_timer);
             osmolation.state=OSMOLATION_ON;
             relays_set(osmolation.tank_relay, 0);
          }
       }
-
       vTaskDelay(LOOP_DELAY_MS / portTICK_PERIOD_MS);      
    }
 }

@@ -3,7 +3,7 @@
 # project subdirectory.
 #
 PROJECT_NAME := mea-osmolator
-EXTRA_COMPONENT_DIRS := /Users/patrice/esp/esp-idf-lib/components
+EXTRA_COMPONENT_DIRS := /Users/patrice/esp/esp-idf-lib/components /Users/patrice/esp/mea-esp32-homekit-toolbox/components
 
 CFLAGS += -I$(abspath ../..) -DHOMEKIT_SHORT_APPLE_UUIDS
 
