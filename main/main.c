@@ -143,6 +143,10 @@ void update_temperature_dht_callback(float t, float prev_t, void *data)
 
 void update_humidity_dht_callback(float h, float prev_h, void *data)
 {
+   if(!data) {
+      return;
+   }
+
    homekit_characteristic_t *c = (homekit_characteristic_t *)data;
    c->value.float_value = h;
 
@@ -158,6 +162,10 @@ void update_humidity_dht_callback(float h, float prev_h, void *data)
  */
 void update_temperature_callback(float t, float l, void *data)
 {
+   if(!data) {
+      return;
+   }
+
    homekit_characteristic_t *c = (homekit_characteristic_t *)data;
    c->value.float_value = t;
 
@@ -330,8 +338,8 @@ homekit_server_config_t *init_accessory() {
 
 void on_network_restart(void *userdata)
 {
-//   tcp_server_restart();
-//   xpl_server_restart();
+   tcp_server_restart();
+   xpl_server_restart();
 }
 
 
@@ -342,7 +350,6 @@ void sta_network_ready() {
    if(_config) {
       homekit_server_init(_config);
    }
-
    vTaskDelay(2000 / portTICK_PERIOD_MS);
 
    contacts_init(my_contacts, nb_contacts);
@@ -368,14 +375,14 @@ void ap_network_ready() {
 }
 
 
-struct contact_s startup_contact[1] = {
-   { .last_state=-1, .gpio_pin=23, .name="init", .callback=NULL, .status=1  }
-};
-
 #define BUTTON_PUSHED 1
 int select_startup_mode()
 {
+   struct contact_s startup_contact[1] = {
+     { .last_state=-1, .gpio_pin=23, .name="init", .callback=NULL, .status=1  }
+   };
    int8_t startup_mode=0;
+
    contacts_init(startup_contact, 1);
    while(startup_contact[0].last_state==-1) { // wait gpio_in_init done
       vTaskDelay(1);
