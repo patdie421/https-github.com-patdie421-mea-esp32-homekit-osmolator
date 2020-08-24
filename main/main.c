@@ -396,6 +396,7 @@ int select_startup_mode()
          startup_mode=1;
       }
    }
+   contacts_delete();
    status_led_set_interval(125);
    return startup_mode;
 }
