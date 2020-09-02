@@ -143,6 +143,10 @@ void update_temperature_dht_callback(float t, float prev_t, void *data)
 
 void update_humidity_dht_callback(float h, float prev_h, void *data)
 {
+   if(!data) {
+      return;
+   }
+
    homekit_characteristic_t *c = (homekit_characteristic_t *)data;
    c->value.float_value = h;
 
@@ -158,6 +162,10 @@ void update_humidity_dht_callback(float h, float prev_h, void *data)
  */
 void update_temperature_callback(float t, float l, void *data)
 {
+   if(!data) {
+      return;
+   }
+
    homekit_characteristic_t *c = (homekit_characteristic_t *)data;
    c->value.float_value = t;
 
@@ -342,7 +350,6 @@ void sta_network_ready() {
    if(_config) {
       homekit_server_init(_config);
    }
-
    vTaskDelay(2000 / portTICK_PERIOD_MS);
 
    contacts_init(my_contacts, nb_contacts);
@@ -390,6 +397,7 @@ int select_startup_mode()
          startup_mode=1;
       }
    }
+   contacts_delete();
    status_led_set_interval(125);
    return startup_mode;
 }
