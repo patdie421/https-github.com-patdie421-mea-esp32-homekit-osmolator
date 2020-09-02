@@ -330,8 +330,8 @@ homekit_server_config_t *init_accessory() {
 
 void on_network_restart(void *userdata)
 {
-//   tcp_server_restart();
-//   xpl_server_restart();
+   tcp_server_restart();
+   xpl_server_restart();
 }
 
 
@@ -368,14 +368,15 @@ void ap_network_ready() {
 }
 
 
+#define BUTTON_PUSHED 1
 struct contact_s startup_contact[1] = {
    { .last_state=-1, .gpio_pin=23, .name="init", .callback=NULL, .status=1  }
 };
 
-#define BUTTON_PUSHED 1
 int select_startup_mode()
 {
    int8_t startup_mode=0;
+
    contacts_init(startup_contact, 1);
    while(startup_contact[0].last_state==-1) { // wait gpio_in_init done
       vTaskDelay(1);
