@@ -149,6 +149,6 @@ void osmolation_init(int8_t tank_relay, int8_t reserve_relay, int8_t level_conta
    osmolation.reserve_high_contact = reserve_high_contact;
    osmolation.state = OSMOLATION_ON;
 
-   xTaskCreate(osmolation_task, "tcp_server", 4096, (void*)0, 1, NULL);
+   xTaskCreate(osmolation_task, "osmo_server", 4096, (void*)0, 1, NULL);
 }
 
